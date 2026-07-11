@@ -1,0 +1,15 @@
+workflows:
+  android-apk:
+    name: Build APK (Android)
+    max_build_duration: 30
+    environment:
+      flutter: stable
+    scripts:
+      - name: Generate platform folders (android/ios)
+        script: flutter create . --platforms=android,ios --project-name dental_history_app
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Build APK
+        script: flutter build apk --release
+    artifacts:
+      - build/**/outputs/**/*.apk
