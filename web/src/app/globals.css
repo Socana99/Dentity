@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+/* Paleta "DentalSoft" — la misma que usa la app móvil (lib/theme/app_theme.dart) */
+:root {
+  --color-primary: #a7c7e7; /* Azul cielo suave */
+  --color-lavender: #c5a3e0; /* Lavanda suave */
+  --color-coral: #f4a261; /* Coral cálido */
+  --color-bg: #f0f4f8; /* Fondo de la app */
+  --color-text-dark: #444444; /* Texto principal */
+  --color-cta-start: #ba8bff;
+  --color-cta-end: #d9b4ff;
+}
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-lavender: var(--color-lavender);
+  --color-coral: var(--color-coral);
+  --color-bg: var(--color-bg);
+  --color-text-dark: var(--color-text-dark);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-sora);
+}
+
+/* Curvas de easing compartidas — las nativas de CSS (ease, ease-out) son
+   demasiado débiles para sentirse intencionales. Se usan vía clase
+   arbitraria de Tailwind, ej. ease-[var(--ease-out)]. */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-dark);
+}
+
+/* El "preflight" de Tailwind resetea el margin de <dialog>, lo que rompe
+   el centrado automático del navegador al abrirlo con showModal(). Esta
+   regla va sin @layer a propósito: así queda por fuera de las capas de
+   Tailwind y siempre gana, sin importar el orden de imports. */
+dialog {
+  margin: auto;
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out),
+    overlay 200ms allow-discrete,
+    display 200ms allow-discrete;
+}
+
+/* Estado cerrado + el instante en que se abre: nunca desde scale(0), un
+   modal no aparece "de la nada". Junto con [open] + @starting-style esto
+   anima tanto la entrada como la salida (dialog.close() incluido). */
+dialog:not([open]) {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+dialog::backdrop {
+  background: rgba(68, 68, 68, 0.35);
+  opacity: 1;
+  transition: opacity 200ms var(--ease-out), display 200ms allow-discrete, overlay 200ms allow-discrete;
+}
+dialog:not([open])::backdrop {
+  opacity: 0;
+}
+@starting-style {
+  dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+/* Confirmación breve tipo "Guardado ✓": debe aparecer con una transición
+   suave, no aparecer de golpe (evita el "salto" al terminar un guardado). */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 200ms var(--ease-out);
+}
+
+/* Cambio de pestaña en la ficha del paciente: el contenido antes
+   "teletransportaba" de una pestaña a otra sin transición. */
+@keyframes tab-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-tab-in {
+  animation: tab-in 200ms var(--ease-out);
+}
+
+/* Entrada escalonada de la lista de pacientes al cargar la página
+   (ocurre una vez por navegación, no en cada tecla — frecuencia baja). */
+@keyframes list-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-list-item {
+  opacity: 0;
+  animation: list-item-in 260ms var(--ease-out) forwards;
+}
+.animate-list-item:nth-child(1) { animation-delay: 0ms; }
+.animate-list-item:nth-child(2) { animation-delay: 40ms; }
+.animate-list-item:nth-child(3) { animation-delay: 80ms; }
+.animate-list-item:nth-child(4) { animation-delay: 120ms; }
+.animate-list-item:nth-child(5) { animation-delay: 160ms; }
+.animate-list-item:nth-child(n+6) { animation-delay: 200ms; }
+
+/* Respeta prefers-reduced-motion globalmente: mantiene los cambios de
+   opacidad/color (ayudan a entender qué pasó) pero elimina el movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
