@@ -26,6 +26,9 @@ dependencies:
   # Sincronización + autenticación en la nube
   supabase_flutter: ^2.5.9
 
+  # Tipografía
+  google_fonts: ^6.2.1
+
   # Exportar historia clínica a PDF
   pdf: ^3.11.0
   printing: ^5.13.1

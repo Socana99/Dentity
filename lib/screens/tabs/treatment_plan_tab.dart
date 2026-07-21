@@ -20,13 +20,14 @@ class _TreatmentPlanTabState extends State<TreatmentPlanTab> {
   }
 
   Future<void> _load() async {
-    final list = await DatabaseHelper.instance.getTreatmentPlan(widget.patientId);
+    final list =
+        await DatabaseHelper.instance.getTreatmentPlan(widget.patientId);
     setState(() => _items = list);
   }
 
   Future<void> _addRow() async {
-    final item = TreatmentPlanItem(
-        id: const Uuid().v4(), patientId: widget.patientId);
+    final item =
+        TreatmentPlanItem(id: const Uuid().v4(), patientId: widget.patientId);
     await DatabaseHelper.instance.upsertTreatmentPlanItem(item);
     _load();
   }
@@ -60,19 +61,24 @@ class _TreatmentPlanTabState extends State<TreatmentPlanTab> {
                           (v) => item.detalle = v, item),
                       _field('Diente/s', item.piezas, 100,
                           (v) => item.piezas = v, item),
-                      SizedBox(
-                        width: 100,
-                        child: TextFormField(
-                          initialValue:
-                              item.costo == 0 ? '' : item.costo.toString(),
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          decoration: const InputDecoration(labelText: 'Costo'),
-                          onChanged: (v) {
-                            item.costo = double.tryParse(v) ?? 0;
-                            _saveRow(item);
-                            setState(() {});
-                          },
+                      LayoutBuilder(
+                        builder: (context, constraints) => SizedBox(
+                          width: constraints.maxWidth < 100
+                              ? constraints.maxWidth
+                              : 100,
+                          child: TextFormField(
+                            initialValue:
+                                item.costo == 0 ? '' : item.costo.toString(),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            decoration:
+                                const InputDecoration(labelText: 'Costo'),
+                            onChanged: (v) {
+                              item.costo = double.tryParse(v) ?? 0;
+                              _saveRow(item);
+                              setState(() {});
+                            },
+                          ),
                         ),
                       ),
                     ],
@@ -103,15 +109,17 @@ class _TreatmentPlanTabState extends State<TreatmentPlanTab> {
 
   Widget _field(String label, String value, double width,
       void Function(String) onChanged, TreatmentPlanItem item) {
-    return SizedBox(
-      width: width,
-      child: TextFormField(
-        initialValue: value,
-        decoration: InputDecoration(labelText: label),
-        onChanged: (v) {
-          onChanged(v);
-          _saveRow(item);
-        },
+    return LayoutBuilder(
+      builder: (context, constraints) => SizedBox(
+        width: constraints.maxWidth < width ? constraints.maxWidth : width,
+        child: TextFormField(
+          initialValue: value,
+          decoration: InputDecoration(labelText: label),
+          onChanged: (v) {
+            onChanged(v);
+            _saveRow(item);
+          },
+        ),
       ),
     );
   }

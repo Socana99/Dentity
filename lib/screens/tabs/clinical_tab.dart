@@ -56,9 +56,9 @@ class _ClinicalHistoryTabState extends State<ClinicalHistoryTab> {
   }
 
   Future<void> _load() async {
-    final h = await DatabaseHelper.instance
-            .getClinicalHistory(widget.patientId) ??
-        ClinicalHistory(id: const Uuid().v4(), patientId: widget.patientId);
+    final h =
+        await DatabaseHelper.instance.getClinicalHistory(widget.patientId) ??
+            ClinicalHistory(id: const Uuid().v4(), patientId: widget.patientId);
     _h = h;
     _motivoCtrl.text = h.motivoConsulta;
     _enfermedadCtrl.text = h.enfermedadActual;
@@ -166,11 +166,13 @@ class _ClinicalHistoryTabState extends State<ClinicalHistoryTab> {
         child: Text(t, style: Theme.of(context).textTheme.titleMedium),
       );
 
-  Widget _small(String label, TextEditingController c) => SizedBox(
-        width: 260,
-        child: TextField(
-          controller: c,
-          decoration: InputDecoration(labelText: label),
+  Widget _small(String label, TextEditingController c) => LayoutBuilder(
+        builder: (context, constraints) => SizedBox(
+          width: constraints.maxWidth < 260 ? constraints.maxWidth : 260.0,
+          child: TextField(
+            controller: c,
+            decoration: InputDecoration(labelText: label),
+          ),
         ),
       );
 }

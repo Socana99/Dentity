@@ -41,6 +41,10 @@ class PatientDetailScreen extends StatelessWidget {
           ),
         ),
         body: TabBarView(
+          // Deshabilitado el swipe: en el odontograma y las firmas el trazo
+          // horizontal del lápiz se confundía con un gesto de cambio de
+          // pestaña. El cambio de pestaña queda solo por toque en el TabBar.
+          physics: const NeverScrollableScrollPhysics(),
           children: [
             AdmissionTab(patientId: patientId),
             ClinicalHistoryTab(patientId: patientId),

@@ -33,7 +33,7 @@ class _OdontogramTabState extends State<OdontogramTab> {
   @override
   Widget build(BuildContext context) {
     if (_marks == null) return const Center(child: CircularProgressIndicator());
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: OdontogramWidget(
         initialMarks: _marks!,

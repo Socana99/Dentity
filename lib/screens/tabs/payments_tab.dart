@@ -46,68 +46,74 @@ class _PaymentsTabState extends State<PaymentsTab> {
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(12),
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Fecha')),
-                DataColumn(label: Text('Tratamiento realizado')),
-                DataColumn(label: Text('Debe')),
-                DataColumn(label: Text('Haber')),
-                DataColumn(label: Text('Saldo')),
-              ],
-              rows: _payments.map((p) {
-                return DataRow(cells: [
-                  DataCell(TextButton(
-                    child: Text(DateFormat('dd/MM/yy').format(p.fecha)),
-                    onPressed: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: p.fecha,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2100),
-                      );
-                      if (picked != null) {
-                        p.fecha = picked;
-                        _save(p);
-                      }
-                    },
-                  )),
-                  DataCell(SizedBox(
-                    width: 220,
-                    child: TextFormField(
-                      initialValue: p.tratamientoRealizado,
-                      onChanged: (v) {
-                        p.tratamientoRealizado = v;
-                        _save(p);
+            // Scroll horizontal propio: la tabla (fecha + tratamiento +
+            // debe + haber + saldo) puede ser más ancha que la pantalla
+            // en tablets angostas o en modo retrato.
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: const [
+                  DataColumn(label: Text('Fecha')),
+                  DataColumn(label: Text('Tratamiento realizado')),
+                  DataColumn(label: Text('Debe')),
+                  DataColumn(label: Text('Haber')),
+                  DataColumn(label: Text('Saldo')),
+                ],
+                rows: _payments.map((p) {
+                  return DataRow(cells: [
+                    DataCell(TextButton(
+                      child: Text(DateFormat('dd/MM/yy').format(p.fecha)),
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: p.fecha,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) {
+                          p.fecha = picked;
+                          _save(p);
+                        }
                       },
-                    ),
-                  )),
-                  DataCell(SizedBox(
-                    width: 90,
-                    child: TextFormField(
-                      initialValue: p.debe == 0 ? '' : p.debe.toString(),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      onChanged: (v) {
-                        p.debe = double.tryParse(v) ?? 0;
-                        _save(p);
-                      },
-                    ),
-                  )),
-                  DataCell(SizedBox(
-                    width: 90,
-                    child: TextFormField(
-                      initialValue: p.haber == 0 ? '' : p.haber.toString(),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      onChanged: (v) {
-                        p.haber = double.tryParse(v) ?? 0;
-                        _save(p);
-                      },
-                    ),
-                  )),
-                  DataCell(Text('\$${p.saldo.toStringAsFixed(2)}')),
-                ]);
-              }).toList(),
+                    )),
+                    DataCell(SizedBox(
+                      width: 220,
+                      child: TextFormField(
+                        initialValue: p.tratamientoRealizado,
+                        onChanged: (v) {
+                          p.tratamientoRealizado = v;
+                          _save(p);
+                        },
+                      ),
+                    )),
+                    DataCell(SizedBox(
+                      width: 90,
+                      child: TextFormField(
+                        initialValue: p.debe == 0 ? '' : p.debe.toString(),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        onChanged: (v) {
+                          p.debe = double.tryParse(v) ?? 0;
+                          _save(p);
+                        },
+                      ),
+                    )),
+                    DataCell(SizedBox(
+                      width: 90,
+                      child: TextFormField(
+                        initialValue: p.haber == 0 ? '' : p.haber.toString(),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        onChanged: (v) {
+                          p.haber = double.tryParse(v) ?? 0;
+                          _save(p);
+                        },
+                      ),
+                    )),
+                    DataCell(Text('\$${p.saldo.toStringAsFixed(2)}')),
+                  ]);
+                }).toList(),
+              ),
             ),
           ),
         ),

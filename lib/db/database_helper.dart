@@ -115,9 +115,24 @@ class DatabaseHelper {
     return rows.isEmpty ? null : Patient.fromMap(rows.first);
   }
 
+  /// Elimina al paciente y todo lo asociado a él (historia clínica,
+  /// odontograma, plan de tratamiento, sesiones, pagos, consentimientos)
+  /// para no dejar registros huérfanos en el resto de tablas.
   Future<void> deletePatient(String id) async {
     final db = await database;
-    await db.delete('patients', where: 'id = ?', whereArgs: [id]);
+    await db.transaction((txn) async {
+      for (final table in [
+        'clinical_history',
+        'tooth_marks',
+        'treatment_plan',
+        'treatment_sessions',
+        'payments',
+        'consents',
+      ]) {
+        await txn.delete(table, where: 'patientId = ?', whereArgs: [id]);
+      }
+      await txn.delete('patients', where: 'id = ?', whereArgs: [id]);
+    });
   }
 
   // ---------------- CLINICAL HISTORY ----------------
@@ -211,8 +226,13 @@ class DatabaseHelper {
   Future<Map<String, List<Map<String, dynamic>>>> getDirtyRows() async {
     final db = await database;
     final tables = [
-      'patients', 'clinical_history', 'tooth_marks',
-      'treatment_plan', 'treatment_sessions', 'payments', 'consents'
+      'patients',
+      'clinical_history',
+      'tooth_marks',
+      'treatment_plan',
+      'treatment_sessions',
+      'payments',
+      'consents'
     ];
     final result = <String, List<Map<String, dynamic>>>{};
     for (final t in tables) {

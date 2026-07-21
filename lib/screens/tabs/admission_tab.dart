@@ -15,6 +15,33 @@ class AdmissionTab extends StatefulWidget {
 }
 
 class _AdmissionTabState extends State<AdmissionTab> {
+  static const _provincias = [
+    'Azuay',
+    'Bolívar',
+    'Cañar',
+    'Carchi',
+    'Chimborazo',
+    'Cotopaxi',
+    'El Oro',
+    'Esmeraldas',
+    'Galápagos',
+    'Guayas',
+    'Imbabura',
+    'Loja',
+    'Los Ríos',
+    'Manabí',
+    'Morona Santiago',
+    'Napo',
+    'Orellana',
+    'Pastaza',
+    'Pichincha',
+    'Santa Elena',
+    'Santo Domingo de los Tsáchilas',
+    'Sucumbíos',
+    'Tungurahua',
+    'Zamora Chinchipe',
+  ];
+
   Patient? _patient;
   final _formKey = GlobalKey<FormState>();
 
@@ -130,6 +157,7 @@ class _AdmissionTabState extends State<AdmissionTab> {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   value: _patient!.sexo,
+                  isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Sexo'),
                   items: const [
                     DropdownMenuItem(value: 'M', child: Text('Masculino')),
@@ -142,6 +170,7 @@ class _AdmissionTabState extends State<AdmissionTab> {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   value: _patient!.estadoCivil,
+                  isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Estado civil'),
                   items: const [
                     DropdownMenuItem(value: 'SOL', child: Text('Soltero')),
@@ -171,19 +200,46 @@ class _AdmissionTabState extends State<AdmissionTab> {
         child: Text(t, style: Theme.of(context).textTheme.titleMedium),
       );
 
+  // Ancho adaptativo: 320 en tablets (donde caben 2+ campos por fila), pero
+  // nunca más que el espacio disponible, para que no se desborde en
+  // celulares angostos (ej. Galaxy S8, ~360dp de ancho).
   Widget _grid(List<String> keys) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 8,
-      children: keys.map((k) {
-        return SizedBox(
-          width: 320,
-          child: TextFormField(
-            controller: _c[k],
-            decoration: InputDecoration(labelText: _fields[k]),
-          ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fieldWidth =
+            constraints.maxWidth < 320 ? constraints.maxWidth : 320.0;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: keys.map((k) {
+            if (k == 'provincia') {
+              final current = _c[k]!.text;
+              return SizedBox(
+                width: fieldWidth,
+                child: DropdownButtonFormField<String>(
+                  value: _provincias.contains(current) ? current : null,
+                  isExpanded: true,
+                  decoration: InputDecoration(labelText: _fields[k]),
+                  items: _provincias
+                      .map((p) => DropdownMenuItem(
+                            value: p,
+                            child: Text(p, overflow: TextOverflow.ellipsis),
+                          ))
+                      .toList(),
+                  onChanged: (v) => setState(() => _c[k]!.text = v ?? ''),
+                ),
+              );
+            }
+            return SizedBox(
+              width: fieldWidth,
+              child: TextFormField(
+                controller: _c[k],
+                decoration: InputDecoration(labelText: _fields[k]),
+              ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 }
