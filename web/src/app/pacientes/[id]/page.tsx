@@ -105,19 +105,21 @@ export default async function PatientDetailPage({
             <h1 className="truncate font-display text-2xl font-extrabold tracking-tight">
               {name}
             </h1>
-            <div className="mt-1.5 flex flex-wrap gap-2">
-              <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium">
-                HC: {patient.numero_historia_clinica || "—"}
+            <div className="mt-2 flex flex-wrap gap-4">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-[#FFE08A]">
+                <FileIcon className="h-4 w-4" />
+                HC {patient.numero_historia_clinica || "—"}
               </span>
-              <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium">
-                Cédula: {patient.cedula || "—"}
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-[#FFB4C6]">
+                <IdIcon className="h-4 w-4" />
+                Cédula {patient.cedula || "—"}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-4xl px-6 pb-16 pt-6">
+      <div className="mx-auto max-w-6xl px-6 pb-16 pt-6">
         <PatientTabs
           patient={patient}
           clinicalHistory={clinicalHistory ?? null}
@@ -136,6 +138,26 @@ function BackIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <polyline points="15 18 9 12 15 6" />
+    </svg>
+  );
+}
+
+function FileIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+      <polyline points="14 2 14 8 20 8" />
+    </svg>
+  );
+}
+
+function IdIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <circle cx="8" cy="12" r="2" />
+      <line x1="14" y1="10" x2="18" y2="10" />
+      <line x1="14" y1="14" x2="18" y2="14" />
     </svg>
   );
 }

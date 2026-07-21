@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { saveToothMark } from "./actions";
 import {
   FDI_QUADRANTS,
@@ -8,7 +8,7 @@ import {
   type OdontoSymbol,
   type ToothMark,
 } from "@/lib/types";
-import ToothIcon from "./tooth-icon";
+import { SYMBOL_STYLE, TOOTH_PATHS, toothShapeFor } from "./tooth-icon";
 
 type MarkState = {
   id: string | null;
@@ -28,6 +28,34 @@ const EMPTY: MarkState = {
 
 const UPPER_ARCH = [...FDI_QUADRANTS[0][1], ...FDI_QUADRANTS[1][1]];
 const LOWER_ARCH = [...FDI_QUADRANTS[2][1], ...FDI_QUADRANTS[3][1]];
+
+// Misma X en ambos modos (solo la corona se mueve verticalmente); el anillo
+// con el número queda fijo como referencia estable entre las dos arcadas.
+const SPACING = 38;
+const MIDLINE_GAP = 16;
+const MARGIN_X = 48;
+const ARCH_AMPLITUDE = 36;
+
+const UPPER_CROWN_Y = 65;
+const UPPER_RING_Y = 145;
+const LOWER_RING_Y = 175;
+const LOWER_CROWN_Y = 255;
+
+function archX(i: number) {
+  const half = i < 8 ? i : i - 8;
+  const side = i < 8 ? 0 : 1;
+  return MARGIN_X + half * SPACING + side * (7 * SPACING + MIDLINE_GAP);
+}
+
+// Como una boca real: las piezas centrales (incisivos, i≈7-8) casi no se
+// mueven, y las piezas del fondo (molares, i≈0 y i≈15 — "las comisuras")
+// se acercan a la arcada opuesta, cerrando el óvalo por los costados.
+function archOffset(i: number, arch: boolean, upper: boolean) {
+  if (!arch) return 0;
+  const t = (i - 7.5) / 7.5;
+  const bulge = ARCH_AMPLITUDE * t * t;
+  return upper ? bulge : -bulge;
+}
 
 export default function OdontogramTab({
   patientId,
@@ -50,10 +78,40 @@ export default function OdontogramTab({
     return map;
   });
   const [selected, setSelected] = useState<number | null>(null);
+  const [archView, setArchView] = useState(true);
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
 
   const current = selected != null ? marks[selected] ?? EMPTY : null;
+
+  const teeth = useMemo(() => {
+    const list: {
+      tooth: number;
+      x: number;
+      crownY: number;
+      ringY: number;
+      upper: boolean;
+    }[] = [];
+    UPPER_ARCH.forEach((tooth, i) => {
+      list.push({
+        tooth,
+        x: archX(i),
+        crownY: UPPER_CROWN_Y + archOffset(i, archView, true),
+        ringY: UPPER_RING_Y,
+        upper: true,
+      });
+    });
+    LOWER_ARCH.forEach((tooth, i) => {
+      list.push({
+        tooth,
+        x: archX(i),
+        crownY: LOWER_CROWN_Y + archOffset(i, archView, false),
+        ringY: LOWER_RING_Y,
+        upper: false,
+      });
+    });
+    return list;
+  }, [archView]);
 
   function updateCurrent(patch: Partial<MarkState>) {
     if (selected == null) return;
@@ -83,68 +141,133 @@ export default function OdontogramTab({
     });
   }
 
-  function ArchRow({ teeth, flip }: { teeth: number[]; flip: boolean }) {
-    const left = teeth.slice(0, 8);
-    const right = teeth.slice(8);
-    const renderTooth = (tooth: number) => {
-      const marked = (marks[tooth]?.symbol ?? "ninguno") !== "ninguno";
-      const isSelected = selected === tooth;
-      return (
-        <button
-          key={tooth}
-          type="button"
-          onClick={() => setSelected(tooth)}
-          className="flex flex-col items-center gap-1 rounded-lg p-0.5 transition-transform duration-150 ease-[var(--ease-out)] active:scale-90"
-        >
-          <ToothIcon
-            toothNumber={tooth}
-            marked={marked}
-            className={`h-9 w-7 sm:h-11 sm:w-8 drop-shadow-sm transition-transform duration-150 ease-[var(--ease-out)] ${
-              flip ? "-scale-y-100" : ""
-            } ${isSelected ? "scale-110" : ""}`}
-          />
-          <span
-            className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold transition-colors duration-150 ${
-              isSelected
-                ? "bg-primary text-white ring-2 ring-primary/40"
-                : marked
-                  ? "bg-coral text-white"
-                  : "border border-gray-200 bg-white text-gray-500"
-            }`}
-          >
-            {tooth}
-          </span>
-        </button>
-      );
-    };
-    return (
-      <div className="flex items-start justify-center gap-1 overflow-x-auto sm:gap-1.5">
-        {left.map(renderTooth)}
-        <div className="w-2 shrink-0 sm:w-3" />
-        {right.map(renderTooth)}
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-gray-500">
-        Toca una pieza (notación FDI) para registrar su estado. Las piezas
-        marcadas se resaltan en color coral.
-      </p>
-
-      <div className="rounded-3xl bg-white p-4 shadow-sm sm:p-6">
-        <p className="mb-2 text-center text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-          Arcada superior
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-gray-500">
+          Toca una pieza para registrar su estado. El color de la corona
+          refleja la condición guardada.
         </p>
-        <ArchRow teeth={UPPER_ARCH} flip />
+        <button
+          type="button"
+          onClick={() => setArchView((v) => !v)}
+          className="flex shrink-0 items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-semibold text-primary transition-[background-color,transform] duration-150 ease-[var(--ease-out)] hover:bg-primary/20 active:scale-95"
+        >
+          <MouthIcon className="h-4 w-4" />
+          {archView ? "Ver como lista" : "Ver como boca"}
+        </button>
+      </div>
 
-        <div className="my-5 border-t border-dashed border-gray-200" />
+      <div className="rounded-3xl bg-white p-2 shadow-sm sm:p-4">
+        <svg viewBox="0 0 700 300" className="h-auto w-full select-none">
+          {teeth.map(({ tooth, x, crownY, ringY, upper }) => {
+            const mark = marks[tooth];
+            const symbol = mark?.symbol ?? "ninguno";
+            const style = SYMBOL_STYLE[symbol];
+            const shape = toothShapeFor(tooth);
+            const isSelected = selected === tooth;
+            const marked = symbol !== "ninguno";
+            const ringFill = isSelected ? "#A7C7E7" : marked ? style.fill : "#FFFFFF";
+            const ringStroke = isSelected ? "#A7C7E7" : marked ? style.stroke : "#D1D5DB";
+            const ringText = isSelected || marked ? "#FFFFFF" : "#6B7280";
+            const badgeY = upper ? crownY - 24 : crownY + 24;
 
-        <ArchRow teeth={LOWER_ARCH} flip={false} />
-        <p className="mt-2 text-center text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-          Arcada inferior
-        </p>
+            return (
+              <g
+                key={tooth}
+                role="button"
+                tabIndex={0}
+                aria-label={`Pieza ${tooth}`}
+                onClick={() => setSelected(tooth)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") setSelected(tooth);
+                }}
+                className="cursor-pointer focus:outline-none"
+              >
+                <rect
+                  x={x - 17}
+                  y={(upper ? crownY - 30 : ringY - 14) - 4}
+                  width={34}
+                  height={
+                    (upper ? ringY + 14 : crownY + 30) -
+                    (upper ? crownY - 30 : ringY - 14) +
+                    8
+                  }
+                  fill="transparent"
+                  style={{ pointerEvents: "all" }}
+                />
+
+                {isSelected && (
+                  <rect
+                    x={x - 20}
+                    y={upper ? crownY - 32 : ringY - 16}
+                    width={40}
+                    height={
+                      (upper ? ringY + 14 : crownY + 32) -
+                      (upper ? crownY - 32 : ringY - 16)
+                    }
+                    rx={14}
+                    className="fill-primary/10"
+                  />
+                )}
+
+                {/* Corona */}
+                <g
+                  className="transition-transform duration-150 ease-[var(--ease-out)]"
+                  style={{
+                    transform: `translate(${x}px, ${crownY}px) scale(${
+                      isSelected ? 1.15 : 1
+                    }) ${upper ? "scale(1,-1)" : ""} translate(-16px, -22px)`,
+                  }}
+                >
+                  <path
+                    d={TOOTH_PATHS[shape]}
+                    fill={style.fill}
+                    stroke={isSelected ? "#A7C7E7" : style.stroke}
+                    strokeWidth={isSelected ? 2.6 : 2.2}
+                    strokeLinejoin="round"
+                    strokeDasharray={style.dashed ? "3 3" : undefined}
+                  />
+                </g>
+
+                {/* Insignia de tratamiento (ej. "PR", "OB") */}
+                {style.abbr && (
+                  <g style={{ transform: `translate(${x + 13}px, ${badgeY}px)` }}>
+                    <circle r={8} fill={style.stroke} />
+                    <text
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={8}
+                      fontWeight={700}
+                      fill="#FFFFFF"
+                    >
+                      {style.abbr}
+                    </text>
+                  </g>
+                )}
+
+                {/* Anillo con el número FDI */}
+                <g style={{ transform: `translate(${x}px, ${ringY}px)` }}>
+                  <circle
+                    r={11}
+                    fill={ringFill}
+                    stroke={ringStroke}
+                    strokeWidth={1.5}
+                  />
+                  <text
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize={10}
+                    fontWeight={600}
+                    fill={ringText}
+                  >
+                    {tooth}
+                  </text>
+                </g>
+              </g>
+            );
+          })}
+        </svg>
       </div>
 
       {current && selected != null && (
@@ -232,5 +355,18 @@ export default function OdontogramTab({
         </div>
       )}
     </div>
+  );
+}
+
+function MouthIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <path
+        d="M3 10c3 5 15 5 18 0-3 8-15 8-18 0Z"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

@@ -24,20 +24,17 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-primary to-primary/85 px-6 py-12">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white p-3">
+          <div className="rounded-[28px] bg-white px-8 py-6 shadow-lg">
             <Image
               src="/dentity-logo.svg"
               alt="Dentity"
-              width={56}
-              height={30}
-              className="h-auto w-full"
+              width={220}
+              height={120}
+              className="h-auto w-48 sm:w-56"
               priority
             />
           </div>
-          <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-white">
-            Dentity
-          </h1>
-          <p className="mt-1 text-white/85">Historia clínica dental digital</p>
+          <p className="mt-4 text-white/85">Historia clínica dental digital</p>
         </div>
 
         <div className="mt-7 rounded-[28px] bg-white p-6 shadow-xl">

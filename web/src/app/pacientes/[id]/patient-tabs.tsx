@@ -10,6 +10,8 @@ import type {
   TreatmentPlanItem,
   TreatmentSession,
 } from "@/lib/types";
+import PlanSidebar from "./plan-sidebar";
+import SummaryTab from "./summary-tab";
 import AdmissionTab from "./admission-tab";
 import ClinicalTab from "./clinical-tab";
 import OdontogramTab from "./odontogram-tab";
@@ -19,6 +21,7 @@ import PaymentsTab from "./payments-tab";
 import ConsentTab from "./consent-tab";
 
 const TABS = [
+  "Resumen",
   "Admisión",
   "Historia",
   "Odontograma",
@@ -45,49 +48,64 @@ export default function PatientTabs({
   payments: PaymentRecord[];
   consent: ConsentRecord | null;
 }) {
-  const [active, setActive] = useState<(typeof TABS)[number]>("Admisión");
+  const [active, setActive] = useState<(typeof TABS)[number]>("Resumen");
 
   return (
-    <div>
-      <div className="-mx-6 mb-6 overflow-x-auto px-6">
-        <div className="flex w-max gap-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
+      <PlanSidebar
+        treatmentPlan={treatmentPlan}
+        onOpenPlan={() => setActive("Plan")}
+      />
+
+      <div className="min-w-0">
+        <nav className="mb-6 flex gap-6 overflow-x-auto border-b border-gray-200">
           {TABS.map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setActive(tab)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-[background-color,color,transform] duration-150 ease-[var(--ease-out)] active:scale-95 ${
+              className={`shrink-0 whitespace-nowrap border-b-2 px-0.5 pb-3 text-sm font-medium transition-colors duration-150 ease-[var(--ease-out)] ${
                 active === tab
-                  ? "bg-primary text-white shadow-sm"
-                  : "bg-white text-text-dark hover:bg-primary/10"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-text-dark"
               }`}
             >
               {tab}
             </button>
           ))}
-        </div>
-      </div>
+        </nav>
 
-      <div key={active} className="animate-tab-in rounded-3xl bg-bg">
-        {active === "Admisión" && <AdmissionTab patient={patient} />}
-        {active === "Historia" && (
-          <ClinicalTab patientId={patient.id} history={clinicalHistory} />
-        )}
-        {active === "Odontograma" && (
-          <OdontogramTab patientId={patient.id} marks={toothMarks} />
-        )}
-        {active === "Plan" && (
-          <TreatmentPlanTab patientId={patient.id} items={treatmentPlan} />
-        )}
-        {active === "Sesiones" && (
-          <SessionsTab patientId={patient.id} sessions={sessions} />
-        )}
-        {active === "Pagos" && (
-          <PaymentsTab patientId={patient.id} payments={payments} />
-        )}
-        {active === "Consentimiento" && (
-          <ConsentTab patientId={patient.id} consent={consent} />
-        )}
+        <div key={active} className="animate-tab-in">
+          {active === "Resumen" && (
+            <SummaryTab
+              patient={patient}
+              toothMarks={toothMarks}
+              treatmentPlan={treatmentPlan}
+              sessions={sessions}
+              payments={payments}
+              consent={consent}
+            />
+          )}
+          {active === "Admisión" && <AdmissionTab patient={patient} />}
+          {active === "Historia" && (
+            <ClinicalTab patientId={patient.id} history={clinicalHistory} />
+          )}
+          {active === "Odontograma" && (
+            <OdontogramTab patientId={patient.id} marks={toothMarks} />
+          )}
+          {active === "Plan" && (
+            <TreatmentPlanTab patientId={patient.id} items={treatmentPlan} />
+          )}
+          {active === "Sesiones" && (
+            <SessionsTab patientId={patient.id} sessions={sessions} />
+          )}
+          {active === "Pagos" && (
+            <PaymentsTab patientId={patient.id} payments={payments} />
+          )}
+          {active === "Consentimiento" && (
+            <ConsentTab patientId={patient.id} consent={consent} />
+          )}
+        </div>
       </div>
     </div>
   );
