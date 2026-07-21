@@ -9,7 +9,7 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(const DentalHistoryApp());
 
-    expect(find.text('SmileVault'), findsOneWidget);
+    expect(find.text('Dentity'), findsOneWidget);
     expect(find.text('Iniciar sesión'), findsOneWidget);
   });
 }

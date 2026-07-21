@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               size: 44, color: Colors.white),
                         ),
                         const SizedBox(height: 16),
-                        const Text('SmileVault',
+                        const Text('Dentity',
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 28,

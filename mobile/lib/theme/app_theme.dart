@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Tema visual único de SmileVault. Al definir todo aquí, cada Card,
+/// Tema visual único de Dentity. Al definir todo aquí, cada Card,
 /// TextFormField, Chip, botón, AppBar y TabBar de la app se ve consistente
 /// automáticamente, sin tener que repetir estilos en cada pantalla.
 class AppTheme {

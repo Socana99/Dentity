@@ -1,0 +1,5 @@
+# Config local de herramientas de asistente de código (específico de esta
+# máquina/sesión, no es parte del producto).
+.claude/
+.agents/
+skills-lock.json

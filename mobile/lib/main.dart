@@ -22,7 +22,7 @@ class DentalHistoryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SmileVault',
+      title: 'Dentity',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       // Layout pensado para tablet: se aprovecha bien en apaisado.

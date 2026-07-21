@@ -168,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icon(Icons.health_and_safety_rounded,
                       color: Colors.white, size: 20),
                   SizedBox(width: 6),
-                  Text('SmileVault',
+                  Text('Dentity',
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
