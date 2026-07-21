@@ -30,6 +30,7 @@ export default function DeletePatientButton({
 
       <dialog
         ref={dialogRef}
+        onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md rounded-3xl p-6 backdrop:bg-black/40"
       >
         <h3 className="font-display text-lg font-bold text-text-dark">
@@ -44,7 +45,11 @@ export default function DeletePatientButton({
         <div className="mt-5 flex justify-end gap-3">
           <button
             type="button"
-            onClick={() => dialogRef.current?.close()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              dialogRef.current?.close();
+            }}
             className="rounded-xl px-4 py-2 text-sm font-medium text-primary transition-transform duration-150 ease-[var(--ease-out)] active:scale-95"
           >
             Cancelar
@@ -52,12 +57,14 @@ export default function DeletePatientButton({
           <button
             type="button"
             disabled={pending}
-            onClick={() =>
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               startTransition(async () => {
                 await deletePatient(patientId);
                 dialogRef.current?.close();
-              })
-            }
+              });
+            }}
             className="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-[opacity,transform] duration-150 ease-[var(--ease-out)] active:scale-95 disabled:opacity-60 disabled:active:scale-100"
           >
             {pending ? "Eliminando…" : "Eliminar"}
